@@ -1,3 +1,5 @@
+from crc_itu import crc16
+
 ProtocolDescription = {
     '0x01': 'Login Information'
     , '0x22': 'Positioning Data(UTC)'
@@ -112,6 +114,11 @@ GPSRealTimeReUploadDescription = {
     '0x00': 'Real-Time Upload'
     , '0x01': 'Re-Upload'
 }
+
+
+def GenerateCRC(string):
+    CRC = hex(crc16(bytes.fromhex(string)))
+    return str(CRC[2:].zfill(4))
 
 
 def hex_to_string_int(hex):
@@ -229,6 +236,14 @@ def process_InformationContent(data, protocol_number):
         DecodedInformationContent['InformationContent_ModelIdentificationCode'] = ModelIdentificationCode
         DecodedInformationContent['InformationContent_TimeZoneLanguage'] = TimeZoneLanguage
 
+        ErrorCheck, remainedData = SplitData(data=remainedData, bytes=2, from_start=False)
+        InformationSerialNumber, remainedData = SplitData(data=remainedData, bytes=2, from_start=False)
+        packetLength = '0x05'
+
+        CRCResponseString = packetLength + ' ' + protocol_number + ' ' + InformationSerialNumber
+        CRCString = hex_to_string(CRCResponseString)
+        CRC = GenerateCRC(CRCString)
+        Response = '7878' + CRCString + CRC + '0d0a'
     elif protocol_number == '0x22' or protocol_number == '0x12':  # Positioning Data Packet
 
         DateTime, remainedData = SplitData(data=data, bytes=6)
@@ -289,6 +304,14 @@ def process_InformationContent(data, protocol_number):
         DecodedInformationContent['GSMSignalStrength'] = GSMSignalStrength
         DecodedInformationContent['Language_ExtendedPort_Status'] = Language_ExtendedPort_Status
 
+        ErrorCheck, remainedData = SplitData(data=remainedData, bytes=2, from_start=False)
+        InformationSerialNumber, remainedData = SplitData(data=remainedData, bytes=2, from_start=False)
+        packetLength = '0x05'
+        CRCResponseString = packetLength + ' ' + protocol_number + ' ' + InformationSerialNumber
+        CRCString = hex_to_string(CRCResponseString)
+        CRC = GenerateCRC(CRCString)
+        Response = '7878' + CRCString + CRC + '0d0a'
+
     elif protocol_number == '0x21':  # Online Command Response from Terminal
         return True
     elif protocol_number == '0x15':  # Online Command Response from Terminal
@@ -347,6 +370,15 @@ def process_InformationContent(data, protocol_number):
         DecodedInformationContent['Alarm_Language'] = Alarm_Language
         DecodedAlarm_Language = Process_Alarm_Language(Alarm_Language)
         DecodedInformationContent['DecodedAlarm_Language'] = DecodedAlarm_Language
+
+        ErrorCheck, remainedData = SplitData(data=remainedData, bytes=2, from_start=False)
+        InformationSerialNumber, remainedData = SplitData(data=remainedData, bytes=2, from_start=False)
+        packetLength = '0x05'
+        CRCResponseString = packetLength + ' ' + protocol_number + ' ' + InformationSerialNumber
+        CRCString = hex_to_string(CRCResponseString)
+        CRC = GenerateCRC(CRCString)
+        Response = '7878' + CRCString + CRC + '0d0a'
+        
     elif protocol_number == '0x19':
         return True
     elif protocol_number == '0x27':
@@ -389,15 +421,13 @@ def DecodeGT08Data(data):
     DecodedPacket['Protocol Description'] = ProtocolDescription[ProtocolNumber]
 
     # StopBit, remainedData = SplitData(data=remainedData, bytes=2, from_start=False)
-    ErrorCheck, remainedData = SplitData(data=remainedData, bytes=2, from_start=False)
-    InformationSerialNumber, remainedData = SplitData(data=remainedData, bytes=2, from_start=False)
 
     DecodedPacket['Raw Information Content'] = remainedData
 
     DecodedInformationContent, Response = process_InformationContent(data=remainedData, protocol_number=ProtocolNumber)
     DecodedPacket['DecodedInformationContent'] = DecodedInformationContent
-    DecodedPacket['InformationSerialNumber'] = InformationSerialNumber
-    DecodedPacket['ErrorCheck'] = ErrorCheck
+    # DecodedPacket['InformationSerialNumber'] = InformationSerialNumber
+    # DecodedPacket['ErrorCheck'] = ErrorCheck
     # DecodedPacket['StopBit'] = StopBit
 
     return DecodedPacket, Response
@@ -421,3 +451,4 @@ def DecodeData(data, server_time, type):
             decodedPacket['RawPacket'] = packet + '0d0a'
             DecodedPackets.append(decodedPacket)
     return DecodedPackets, Response
+
