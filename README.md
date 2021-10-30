@@ -1,6 +1,6 @@
 # ON SERVER
 
-Install **python 3.7.9** in your server (+ static valid IP)
+Install **python 3.7.9** in your server (SERVER with static valid IP)
 
 
 Clone repository to your server
@@ -13,13 +13,13 @@ create Virtual Environment(Optional - Recommended)
 
 active just created Virtual Environment
 
-for windows 
+- for windows 
 
-    run vEnv/Script/activate
+      vEnv/Script/activate
 
-for linux 
+- for linux 
 
-    run source vEnv/bin/activate
+      source vEnv/bin/activate
 
 import required packages
 
@@ -27,19 +27,19 @@ import required packages
 
 edit PortListener.py
 
-    line 7: change TCP_IP to desire IP Address
+    line 7: change TCP_IP to desire VALID STATIC IP Address
     line 8: change TCP_PORT to desire Port Number
 
 open Desire Port Number on Firewall
 
 run the program
 
-for windows 
-
-    python main.py
-for linux 
+- for windows 
+   
+        python main.py
+- for linux 
     
-    python3 main.py
+        python3 main.py
 
 # on Tracker 
 ###(just Concox GT08 for now)

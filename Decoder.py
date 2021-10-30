@@ -228,7 +228,6 @@ def process_InformationContent(data, protocol_number):
     Response = '78780d0a'
     DecodedInformationContent = {}
     if protocol_number == '0x01':  # Login Packet
-        print('******** Login Packet ************')
         TerminalID, remainedData = SplitData(data=data, bytes=8)
         ModelIdentificationCode, remainedData = SplitData(data=remainedData, bytes=2)
         TimeZoneLanguage, remainedData = SplitData(data=remainedData, bytes=2)
@@ -245,7 +244,6 @@ def process_InformationContent(data, protocol_number):
         CRC = GenerateCRC(CRCString)
         Response = '7878' + CRCString + CRC + '0d0a'
     elif protocol_number == '0x22' or protocol_number == '0x12':  # Positioning Data Packet
-        print('******** Positioning Data Packet ************')
 
         DateTime, remainedData = SplitData(data=data, bytes=6)
         QuantityOfGPSSatellites, remainedData = SplitData(data=remainedData, bytes=1)
@@ -295,7 +293,6 @@ def process_InformationContent(data, protocol_number):
             DecodedInformationContent['Mileage'] = hex_to_string_int(Mileage)
 
     elif protocol_number == '0x13':  # Heartbeat Packet
-        print('******** Heartbeat Packet ************')
 
         TerminalInformationContent, remainedData = SplitData(data=data, bytes=1)
         Built_inBatteryVoltageLevel, remainedData = SplitData(data=remainedData, bytes=1)
@@ -319,8 +316,6 @@ def process_InformationContent(data, protocol_number):
     elif protocol_number == '0x15':  # Online Command Response from Terminal
         return True
     elif protocol_number == '0x26':  # Alarm Data UTC
-        print('******** Alarm Data UTC ************')
-
         DateTime, remainedData = SplitData(data=data, bytes=6)
         QuantityOfGPSSatellites, remainedData = SplitData(data=remainedData, bytes=1)
         Latitude, remainedData = SplitData(data=remainedData, bytes=4)
@@ -423,14 +418,9 @@ def DecodeGT08Data(data):
     DecodedPacket['ProtocolNumber'] = ProtocolNumber
     DecodedPacket['Protocol Description'] = ProtocolDescription[ProtocolNumber]
 
-    # StopBit, remainedData = SplitData(data=remainedData, bytes=2, from_start=False)
-
     DecodedPacket['Raw Information Content'] = remainedData
     DecodedInformationContent, Response = process_InformationContent(data=remainedData, protocol_number=ProtocolNumber)
     DecodedPacket['DecodedInformationContent'] = DecodedInformationContent
-    # DecodedPacket['InformationSerialNumber'] = InformationSerialNumber
-    # DecodedPacket['ErrorCheck'] = ErrorCheck
-    # DecodedPacket['StopBit'] = StopBit
 
     return DecodedPacket, Response
 
@@ -444,13 +434,16 @@ def DecodeData(data, server_time, type):
         i += 1
         if len(str(packet).strip()) > 0:
             decodedPacket = {}
-            # print(packet)
             decoded_Packet, Response = DecodeGT08Data(packet)
             decodedPacket['Server Time'] = server_time
             decodedPacket['Type'] = type
             decodedPacket['Offset'] = '{} of {}'.format(i, len(packets) - 1)
             decodedPacket['Decoded'] = decoded_Packet
             decodedPacket['RawPacket'] = packet + '0d0a'
+            print('*************** Decoded Packet Information **************')
+            print(decodedPacket)
+            print('*********************************************************')
+            print('')
             DecodedPackets.append(decodedPacket)
     return DecodedPackets, Response
 
